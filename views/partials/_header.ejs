@@ -1,3 +1,18 @@
-<header>
-Header
-</header>
+
+<head>
+header
+</head>
+<body>
+    <form action="/login" method="POST">
+      <label for="username">Enter a username:</label>
+      <input type="username" name="username">
+      <input type="submit" value="Submit">
+    </form>
+
+<% if (username){%>
+    <h2>Hello</h2>
+<p><%= username %></p>
+    <% } else {%>
+      <p>You should go <a href='/login'>login</a></p>
+    <% } %>
+</body>
