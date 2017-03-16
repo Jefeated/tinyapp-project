@@ -15,6 +15,7 @@ var urlDatabase = {                           //DB
   "9sm5xK": "http://www.google.com"
 };
 
+
 app.use((req, res, next) => {
   res.locals.username = req.cookies["username"];
   next();
@@ -40,6 +41,10 @@ app.get("/urls/:id", (req, res) => {    //SHOW  //ID
 
 app.get("/logout", (req, res) => {    //ROOT  
   res.redirect("/urls");
+});
+
+app.get("/register", (req, res) => {    //REGISTER
+  res.render("register");
 });
 
 app.listen(PORT, () => {
