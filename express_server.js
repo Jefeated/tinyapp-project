@@ -4,10 +4,10 @@ var PORT = process.env.PORT || 8080; // default port 8080
 
 app.set("view engine", "ejs");
 
-const bodyParser = require("body-parser");
-app.use(bodyParser.urlencoded({extended: true}));
+const bodyParser = require("body-parser");    // 
+app.use(bodyParser.urlencoded({extended: true})); 
 
-var urlDatabase = {
+var urlDatabase = {                           //DB
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
@@ -33,8 +33,8 @@ app.listen(PORT, () => {
 
 app.post("/urls", (req, res) => {
   console.log(req.body); // debug statement to see POST parameters
-  let longURL = req.body.longURL;
-  let shortURL = generateRandomString();
+  let longURL = req.body.longURL;   
+  let shortURL = generateRandomString();  
   urlDatabase[shortURL] = longURL; //makes object to put into DB
   res.send("Ok");         // Respond with 'Ok' (we will replace this)
 });
@@ -47,17 +47,22 @@ var text = "";
     return text;
 }
 
-app.get("/u/:shortURL", (req, res) => {
-let longURL = urlDatabase[shortURL];
+app.get("/u/:shortURL", (req, res) => {   //REDIRECT
+let longURL = urlDatabase[shortURL];    
 res.redirect(longURL);
 });
 
 app.post('/urls/:id/delete', (req, res) =>{   //DELETE
-  delete urlDatabase[req.params.id];
+  delete urlDatabase[req.params.id];    //goes into DB and grabs shortURL
   res.redirect('/urls');
 });
 
 app.post('/urls/:id/update', (req, res) => {       //UPDATE
   urlDatabase[req.params.id] = req.body.longURL;
+  res.redirect('/urls');
+});
+//------------------------------------------COOKIES
+app.post('/login', (req, res) => {
+  res.cookie('username', req.body.username);
   res.redirect('/urls');
 });
