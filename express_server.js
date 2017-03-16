@@ -4,13 +4,25 @@ var PORT = process.env.PORT || 8080; // default port 8080
 
 app.set("view engine", "ejs");
 
-const bodyParser = require("body-parser");    // 
+const bodyParser = require("body-parser");   
 app.use(bodyParser.urlencoded({extended: true})); 
+
+var cookieParser = require('cookie-parser');
+app.use(cookieParser());
 
 var urlDatabase = {                           //DB
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
+
+app.use((req, res, next) => {
+  res.locals.username = req.cookies["username"];
+  next();
+});
+
+app.get("/", (req, res) => {    //ROOT  
+  res.redirect("/urls");
+});
 
 app.get("/urls", (req, res) => {    //INDEX
   let templateVars = { urls: urlDatabase };
@@ -23,13 +35,16 @@ app.get("/urls/new", (req, res) => {    //NEW
 
 app.get("/urls/:id", (req, res) => {    //SHOW  //ID
   let templateVars = { shortURL: req.params.id };
-  res.render("urls_show", templateVars);
+  res.render("urls_show",templateVars);
+});
+
+app.get("/logout", (req, res) => {    //ROOT  
+  res.redirect("/urls");
 });
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
-
 
 app.post("/urls", (req, res) => {
   console.log(req.body); // debug statement to see POST parameters
@@ -62,7 +77,33 @@ app.post('/urls/:id/update', (req, res) => {       //UPDATE
   res.redirect('/urls');
 });
 //------------------------------------------COOKIES
+
 app.post('/login', (req, res) => {
-  res.cookie('username', req.body.username);
-  res.redirect('/urls');
+  res.cookie ('username', req.body.username);
+  res.redirect('/');
 });
+
+app.post('/logout', (req, res) => {
+  res.clearCookie('username'); 
+  res.redirect('/');
+});
+
+// let templateVars = {
+//   username: req.cookies["username"],
+//   // ... any other vars
+// };
+// res.render("urls_index", templateVars);
+
+// app.post('/login', (req, res) => {
+//   let templateVars = {
+//   username: req.cookies["username"]
+// };
+//   res.cookie('username', req.body.username);
+// if (username === req.body.username){
+//   res.redirect('/urls');
+// } else {
+//   res.status('/login');
+// }
+// });
+
+
