@@ -1,6 +1,6 @@
 
 <head>
-header
+
 </head>
 <body>
     <form action="/login" method="POST">
@@ -15,4 +15,8 @@ header
     <% } else {%>
       <p>You should go <a href='/login'>login</a></p>
     <% } %>
+        <form action="/logout" method="POST">
+      <input type="submit" value="logout">
+    </form>
+
 </body>
