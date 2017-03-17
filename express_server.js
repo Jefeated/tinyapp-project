@@ -56,7 +56,11 @@ app.post('/login', (req, res) => { // Check to see if there is a user with the b
   }
 });
 
-app.get("/logout", (req, res) => {    //ROOT  
+app.get("/login", (req, res) => {   
+  res.render("login");
+});
+
+app.get("/logout", (req, res) => {    
   res.redirect("/urls");
 });
 
@@ -98,15 +102,23 @@ app.post('/urls/:id/update', (req, res) => {       //UPDATE
   urlDatabase[req.params.id] = req.body.longURL;
   res.redirect('/urls');
 });
-//------------------------------------------COOKIES
+//------------------------------------------COOKIES/LOGIN
 
 app.post('/login', (req, res) => {
-  res.cookie ('username', req.body.username);
+  if (email !== userDB[email]){
+    res.status(403).render('403');
+  }
+  else if (password !== userDB[password]){
+    res.status(403).render('403');
+  }
+  else {
+  res.cookie (userDB[req.cookies]['userid']);
   res.redirect('/');
+  };
 });
 
 app.post('/logout', (req, res) => {
-  res.clearCookie('username'); 
+  res.clearCookie(userDB['id']); 
   res.redirect('/');
 });
 //----------------------------------------- REGISTER
@@ -114,9 +126,12 @@ app.post("/register", (req, res) => {
   let email = req.body.email;
   let password = req.body.password;   
   let id = generateRandomString();  
-  if (!email || !password){
-    res.status(403).render('403');
-  }else{
+  if (password.length < 0 && email.length < 0){
+    res.status(400).render('400');
+  }
+  else if (email === userDB[email]){
+    res.status(400).render('400');
+    } else {
     userDB[id] = {
     id: generateRandomString(), 
     email: req.body.email, 
