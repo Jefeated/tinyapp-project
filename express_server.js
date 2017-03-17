@@ -28,17 +28,12 @@ const userDB = {
   }
 }
 
-app.use((req, res, next) => {
-  res.locals.username = req.cookies["username"];
-  next();
-});
-
 app.get("/", (req, res) => {    //ROOT  
   res.redirect("/urls");
 });
 
 app.get("/urls", (req, res) => {    //INDEX
-  let templateVars = { urls: urlDatabase };
+  let templateVars = { urls: urlDatabase, userDB: req.cookies['userid']};
   res.render("urls_index", templateVars);
 });
 
@@ -47,8 +42,18 @@ app.get("/urls/new", (req, res) => {    //NEW
 });
 
 app.get("/urls/:id", (req, res) => {    //SHOW  //ID
-  let templateVars = { shortURL: req.params.id };
+  let templateVars = { shortURL: req.params.id, userDB: req.cookies['userid'] };
   res.render("urls_show",templateVars);
+});
+
+app.post('/login', (req, res) => { // Check to see if there is a user with the body email
+  const user = userDB[req.body.email]; // Check to see if that user has the body password
+  if(user && user.password === req.body.password){ // If so, login, set email cookie, and redirect
+    res.cookie ('userid', id);
+    res.redirect('/');
+  } else {
+    res.status(403).render('403');
+  }
 });
 
 app.get("/logout", (req, res) => {    //ROOT  
@@ -117,9 +122,7 @@ app.post("/register", (req, res) => {
     email: req.body.email, 
     password: req.body.password
   };
-  res.cookie ('cookie', id);
+  res.cookie ('userid', id);
 }
 res.redirect('/');
 });
-
-
