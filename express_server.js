@@ -15,6 +15,18 @@ var urlDatabase = {                           //DB
   "9sm5xK": "http://www.google.com"
 };
 
+const userDB = { 
+  "userRandomID": {
+    id: "userRandomID", 
+    email: "user@example.com", 
+    password: "purple-monkey-dinosaur"
+  },
+ "user2RandomID": {
+    id: "user2RandomID", 
+    email: "user2@example.com", 
+    password: "dishwasher-funk"
+  }
+}
 
 app.use((req, res, next) => {
   res.locals.username = req.cookies["username"];
@@ -92,23 +104,22 @@ app.post('/logout', (req, res) => {
   res.clearCookie('username'); 
   res.redirect('/');
 });
-
-// let templateVars = {
-//   username: req.cookies["username"],
-//   // ... any other vars
-// };
-// res.render("urls_index", templateVars);
-
-// app.post('/login', (req, res) => {
-//   let templateVars = {
-//   username: req.cookies["username"]
-// };
-//   res.cookie('username', req.body.username);
-// if (username === req.body.username){
-//   res.redirect('/urls');
-// } else {
-//   res.status('/login');
-// }
-// });
+//----------------------------------------- REGISTER
+app.post("/register", (req, res) => {
+  let email = req.body.email;
+  let password = req.body.password;   
+  let id = generateRandomString();  
+  if (!email || !password){
+    res.status(403).render('403');
+  }else{
+    userDB[id] = {
+    id: generateRandomString(), 
+    email: req.body.email, 
+    password: req.body.password
+  };
+  res.cookie ('cookie', id);
+}
+res.redirect('/');
+});
 
 
