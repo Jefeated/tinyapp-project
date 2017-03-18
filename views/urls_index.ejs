@@ -8,14 +8,16 @@
     <li>
       <ul>
           <% for (item in urls) { %>
-        <li><%= item %> - <%= urls[item] %></li>
+        <li><%= item %> - <%= urls[item]['url'] %></li>
         <form method="POST" action="/urls/<%= item%>/delete">
         <p>
         <button>Delete url</button>
         </p>
         </form>
+        <a href="/urls/<%=item %>"><button>edit url</button></a>
+
     <% } %>
-        <a href = "/urls/<% urls[item] %>">
+
 
       </ul>
     </li>
