@@ -4,11 +4,11 @@
   <% include partials/_header %>
 </head>
 <body>
+<h1>urls</h1>
     <!-- Add your EJS code here -->
-    <li>
       <ul>
           <% for (item in urls) { %>
-        <li><%= item %> - <%= urls[item]['url'] %></li>
+        <li><%= item %> - <%= item['url'] %></li>
         <form method="POST" action="/urls/<%= item%>/delete">
         <p>
         <button>Delete url</button>
@@ -20,6 +20,6 @@
 
 
       </ul>
-    </li>
+    
 </body>
 </html>
