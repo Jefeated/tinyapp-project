@@ -4,11 +4,11 @@
   <% include partials/_header %>
 </head>
 <body>
-<h1>urls</h1>
+<h1><a href="/urls/new"><button>New short URL</button></a></h1>
     <!-- Add your EJS code here -->
       <ul>
           <% for (item in urls) { %>
-        <li><%= item %> - <%= item['url'] %></li>
+        <li><%= item %> - <%= item.url %></li>
         <form method="POST" action="/urls/<%= item%>/delete">
         <p>
         <button>Delete url</button>

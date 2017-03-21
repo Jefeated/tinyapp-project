@@ -48,8 +48,12 @@ app.get("/", (req, res) => {    //ROOT
 });
 
 app.get("/urls", (req, res) => {    //INDEX
+  if (req.session['userid']){
   let templateVars = { urls: urlDatabase, userDB: req.session['userid']};
   res.render("urls_index", { urls: urlDatabase, userDB: req.session['userid']});
+  }else {
+    res.status(401).send('Not logged in! <a href="/login">Login</a>');
+    }
 });
 
 app.get("/urls/new", (req, res) => {    //NEW
@@ -92,7 +96,11 @@ app.post('/login', (req, res) => { // Check to see if there is a user with the b
 });
 
 app.get("/login", (req, res) => {   
+  if (req.session['userid']) {
+  res.redirect("/");
+  } else {
   res.render("login");
+  }
 });
 
 app.get("/logout", (req, res) => {    
@@ -100,13 +108,12 @@ app.get("/logout", (req, res) => {
 });
 
 app.get("/register", (req, res) => { 
-//   if (req.session['userid']) {
-//   res.render("/");
-// }
-//   else {
-//   res.status(401).send('Not logged in! <a href="/login">Login</a>');
-// } 
+  if (req.session['userid']) {
+  res.redirect("/");
+}
+  else {
   res.render("register");
+  }
 });
 
 app.listen(PORT, () => {
@@ -114,11 +121,15 @@ app.listen(PORT, () => {
 });
 
 app.post("/urls", (req, res) => {
-  console.log(req.body); // debug statement to see POST parameters
-  let longURL = req.body.longURL;   
-  let shortURL = generateRandomString();  
-  urlDatabase[shortURL] = longURL; //makes object to put into DB
-  res.redirect('/');         // Respond with 'Ok' (we will replace this)
+  if (req.session['userid']) {
+   let longURL = req.body.longURL;   
+   let shortURL = generateRandomString();  
+   urlDatabase[shortURL] = longURL; //makes object to put into DB
+   res.redirect('/urls/:id');         // Respond with 'Ok' (we will replace this)
+  }
+   else {
+    res.status(401).send('Not logged in! <a href="/login">Login</a>');
+   }
 });
 
 function generateRandomString() {
@@ -167,7 +178,6 @@ app.post('/logout', (req, res) => {
 });
 //----------------------------------------- REGISTER
 app.post("/register", (req, res) => {
-  console.log(req.body.email)
   let email = req.body.email;
   let password = req.body.password;
   let hashed_password = bcrypt.hashSync(password, 10);
@@ -183,7 +193,7 @@ app.post("/register", (req, res) => {
       id: generateRandomString(), 
       email: req.body.email, 
       password: hashed_password
-    };
+    }
       req.session['userid'];
       res.redirect('/');
     }
