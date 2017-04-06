@@ -8,7 +8,7 @@
     <!-- Add your EJS code here -->
       <ul>
           <% for (item in urls) { %>
-        <li><%= item %> - <%= item.url %></li>
+        <li><%= item %> - <%= urls[item].url %></li>
         <form method="POST" action="/urls/<%= item%>/delete">
         <p>
         <button>Delete url</button>

@@ -1,14 +1,13 @@
-<head>
 
-</head>
-<body>
-    <a href='/register'>register</a>
-    <%  {%>
-      <p><a href='/login'>login</a></p>
-    <% } %>
-        <form action="/logout" method="POST">
+<% if (userid) {  %>
+      <a href='/urls'>My Links</a>
+      <%=userDB[userid]['email']%>
+      <form action="/logout" method="POST">
       <input type="submit" value="logout">
-    </form>
-
-</body>
-
+      </form>
+  
+<% } else { %>
+      <p><a href='/login'>login</a></p>
+    <a href='/register'>register</a>
+    
+<% } %>

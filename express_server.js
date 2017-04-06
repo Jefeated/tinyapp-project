@@ -6,13 +6,13 @@ const cookieSession = require('cookie-session');
 
 app.set("view engine", "ejs");
 
-const bodyParser = require("body-parser");   
-app.use(bodyParser.urlencoded({extended: true})); 
+const bodyParser = require("body-parser");
+app.use(bodyParser.urlencoded({extended: true}));
 
 app.use(cookieSession({
   name: 'session',
   secret: process.env.SESSION_SECRET || "bunny",
-  maxAge: 24 * 60 * 60 * 1000 
+  maxAge: 24 * 60 * 60 * 1000
 }));
 
 var urlDatabase = {                           //DB
@@ -26,93 +26,105 @@ var urlDatabase = {                           //DB
   }
 };
 
-const userDB = { 
+const userDB = {
   "userRandomID": {
-    id: "userRandomID", 
-    email: "user@example.com", 
+    id: "userRandomID",
+    email: "user@example.com",
     password: "a"
   },
  "user2RandomID": {
-    id: "user2RandomID", 
-    email: "user2@example.com", 
+    id: "user2RandomID",
+    email: "user2@example.com",
     password: "b"
   }
 }
 
-app.get("/", (req, res) => {    //ROOT  
+app.get("/", (req, res) => {    //ROOT
   if (req.session['userid']) {
-  res.redirect("/urls");
+    res.redirect("/urls");
   }else{
-  res.redirect("/login");  
-  } 
+    res.redirect("/login");
+  }
 });
 
 app.get("/urls", (req, res) => {    //INDEX
   if (req.session['userid']){
-  let templateVars = { urls: urlDatabase, userDB: req.session['userid']};
-  res.render("urls_index", { urls: urlDatabase, userDB: req.session['userid']});
-  }else {
+    let userURL = {};
+    for(var shortURL in urlDatabase) {
+      if (req.session['userid'] === urlDatabase[shortURL].userid) {
+        userURL[shortURL] = urlDatabase[shortURL];
+      }
+    };
+    let templateVars = { urls: userURL, userDB: userDB, "req": req, userid: req.session.userid};
+
+    res.render("urls_index", templateVars);
+
+  } else {
     res.status(401).send('Not logged in! <a href="/login">Login</a>');
-    }
+  }
 });
 
 app.get("/urls/new", (req, res) => {    //NEW
   if (req.session['userid']) {
-  res.render("urls_new");
-}
-  else {
-  res.status(401).send('Not logged in! <a href="/login">Login</a>');
-}
+    let templateVars = { urls: urlDatabase, userDB: userDB, "req": req, userid: req.session.userid};
+    res.render("urls_new", templateVars);
+  } else {
+    res.status(401).send('Not logged in! <a href="/login">Login</a>');
+  }
 });
 
 app.get("/urls/:id", (req, res) => {    //SHOW  //ID
-  let templateVars = { shortURL: req.params.id, userDB: req.session['userid'],longURL: urlDatabase[req.params.id]};
-    if (req.session['userid']) {
-  res.render("urls_show",templateVars);
-} else {
-  res.redirect("/login");
+  let templateVars = { shortURL: req.params.id, userDB: userDB,longURL: urlDatabase[req.params.id].url, userid:req.session['userid'] };
+  if (req.session['userid']) {
+    res.render("urls_show", templateVars);
+  } else {
+    res.redirect("/login");
   }
 });
                                       //LOGIN
 app.post('/login', (req, res) => { // Check to see if there is a user with the body email
   //const user = userDB[userid][req.body.email]; // Check to see if that user has the body password
-  let uservar;
-  for (urlvar in userDB){
-    if (userDB[urlvar]['email'] === (req.body.email)){
-      uservar = urlvar;
-      let password = userDB[urlvar]['password'];
-      let hashed_password = bcrypt.hashSync(password, 10);
-      if(bcrypt.compareSync(password, hashed_password)){ // If so, login, set email cookie, and redirect//userDB[uservar].password
-        req.session.userid = userDB[uservar].id
-        res.redirect('/urls');
-      }
-      else {
-        res.status(401).render('401');
-      }
+  let flag = false;
+  for (username in userDB){
+    if (userDB[username]['email'] === req.body.email){
+      flag = true;
+      break;
+    }
+  }
+  if (flag){
+    let password = userDB[username]['password'];
+    let hashed_password = bcrypt.hashSync(password, 10);
+    if (bcrypt.compareSync(password, hashed_password)){ // If so, login, set email cookie, and redirect//userDB[uservar].password
+      req.session.userid = userDB[username].id
+
+      res.redirect('/urls');
     } else {
       res.status(401).render('401');
     }
-  }
-});
-
-app.get("/login", (req, res) => {   
-  if (req.session['userid']) {
-  res.redirect("/");
   } else {
-  res.render("login");
+      res.status(401).render('401');
+  }
+
+});
+
+app.get("/login", (req, res) => {
+  if (req.session['userid']) {
+    res.redirect("/");
+  } else {
+    res.render("login");
   }
 });
 
-app.get("/logout", (req, res) => {    
+app.get("/logout", (req, res) => {
   res.redirect("/urls");
 });
 
-app.get("/register", (req, res) => { 
+app.get("/register", (req, res) => {
   if (req.session['userid']) {
-  res.redirect("/");
-}
+    res.redirect("/");
+  }
   else {
-  res.render("register");
+    res.render("register");
   }
 });
 
@@ -122,10 +134,13 @@ app.listen(PORT, () => {
 
 app.post("/urls", (req, res) => {
   if (req.session['userid']) {
-   let longURL = req.body.longURL;   
-   let shortURL = generateRandomString();  
-   urlDatabase[shortURL] = longURL; //makes object to put into DB
-   res.redirect('/urls/:id');         // Respond with 'Ok' (we will replace this)
+   let longURL = req.body.longURL;
+   let shortURL = generateRandomString();
+   urlDatabase[shortURL] = {
+     url: longURL,
+     userid: req.session['userid']
+   }; //makes object to put into DB
+   res.redirect('/urls/' );         // Respond with 'Ok' (we will replace this)
   }
    else {
     res.status(401).send('Not logged in! <a href="/login">Login</a>');
@@ -141,7 +156,7 @@ var text = "";
 }
 
 app.get("/u/:shortURL", (req, res) => {   //REDIRECT
-let longURL = urlDatabase[shortURL][url];    
+let longURL = urlDatabase[shortURL][url];
 res.redirect(longURL);
 });
 
@@ -151,10 +166,11 @@ app.post('/urls/:id/delete', (req, res) =>{   //DELETE
 });
 
 app.post('/urls/:id/update', (req, res) => {       //UPDATE
-  if (urlDatabase[req.params.id] = req.body.longURL){
-  res.redirect('/urls');
-}else{
-  res.redirect("/login"); 
+  if (req.session['userid']){
+    urlDatabase[req.params.id].url = req.body.longURL;
+    res.redirect('/urls');
+  }else{
+    res.redirect("/login");
   }
 });
 //------------------------------------------COOKIES/LOGIN
@@ -180,22 +196,30 @@ app.post('/logout', (req, res) => {
 app.post("/register", (req, res) => {
   let email = req.body.email;
   let password = req.body.password;
+  let flag;
   let hashed_password = bcrypt.hashSync(password, 10);
-  let id = generateRandomString(); 
-  for(user in userDB) {
-    if (password.length <= 0 && email.length <= 0){
+  let id = generateRandomString();
+  if (password.length <= 0 && email.length <= 0){
       res.status(400).send('enter valid email/password');
+  } else {
+    for(user in userDB) {
+      if (email === userDB[user]['email']){
+        res.status(400).send('email in use');
+        flag = true;
+      }
+      flag = false;
     }
-    else if (email === userDB[user]['email']){
-      res.status(400).send('email in use');
-    } else {
+    if(!flag)
       userDB[id] = {
-      id: generateRandomString(), 
-      email: req.body.email, 
+      id: generateRandomString(),
+      email: req.body.email,
       password: hashed_password
     }
-      req.session['userid'];
-      res.redirect('/');
-    }
-  };
+    req.session['userid'];
+    res.redirect('/');
+
+  }
 });
+
+
+
